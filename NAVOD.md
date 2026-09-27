@@ -4,21 +4,27 @@
 
 1. Najdi si zkratku (slug) dané etapy — je to název podsložky v `photos/`:
 
-   | Etapa | Slug                              |
-   |-------|------------------------------------|
-   | 1     | `01-porto`                         |
-   | 2     | `02-vila-do-conde`                 |
-   | 3     | `03-esposende`                     |
-   | 4     | `04-viana-do-castelo`              |
-   | 5     | `05-caminha`                       |
-   | 6     | `06-sao-pedro-da-torre`             |
-   | 7     | `07-o-porriño`                     |
-   | 8     | `08-redondela`                     |
-   | 9     | `09-pontevedra`                    |
-   | 10    | `10-caldas-de-reis`                |
-   | 11    | `11-padrón`                        |
+   | Etapa / cesta | Slug                              |
+   |----------------|------------------------------------|
+   | Cesta Brno → Porto | `00-brno-porto`                |
+   | Den 00 — Porto | `00-porto`                        |
+   | 1     | `01-porto-vila-do-conde`           |
+   | 2     | `02-vila-do-conde-esposende`       |
+   | 3     | `03-esposende-viana-do-castelo`    |
+   | 4     | `04-viana-do-castelo-caminha`      |
+   | 5     | `05-caminha-sao-pedro-da-torre`    |
+   | 6     | `06-sao-pedro-da-torre-o-porrino`  |
+   | 7     | `07-o-porrino-redondela`           |
+   | 8     | `08-redondela-pontevedra`          |
+   | 9     | `09-pontevedra-caldas-de-reis`     |
+   | 10    | `10-caldas-de-reis-padron`         |
+   | 11    | `11-padron-santiago`               |
+   | Santiago → Madrid | `12-santiago-madrid`         |
+   | Madrid → Brno | `13-madrid-brno`                  |
 
-   (Přesný slug uvidíš i přímo v `index.html` u dané etapy — generuje se z čísla a města "from".)
+   (Přesný slug má teď každá etapa/cesta napsaný natvrdo v `index.html` v poli `slug:` —
+   nekóduje se z ničeho automaticky, takže se musí přesně shodovat s názvem složky v `photos/`.
+   Cesty Brno↔Porto a Santiago↔Madrid↔Brno nemají km/převýšení/nocleh, jen fotky.)
 
 2. Nahraj fotky do `photos/<slug>/`, např. `photos/03-esposende/1.jpg`, `2.jpg`, `3.jpg`...
    — pojmenuj je čísly podle pořadí na trase (`01.jpg`, `02.jpg`...), ať jdou na stránce ve správném pořadí.

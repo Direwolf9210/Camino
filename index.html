@@ -474,6 +474,14 @@ stages.forEach(s => {
   s.photoCoords = []; // filled in later from EXIF, [{lng,lat,src}, ...]
 });
 
+/* Cesty tam a zpět - bez km/prevyseni/albergue, jen fotky. Nejsou soucasti trasy na mape. */
+const extraStops = [
+  { n:"pre1", title:"Cesta z Brna do Porta", note:"Cesta na Camino", slug:"00-brno-porto", photos:[] },
+  { n:"pre2", title:"Den 00 — Porto", note:"Před startem, než jsem druhý den ráno vyrazil na Camino", slug:"00-porto", photos:[] },
+  { n:"post1", title:"Santiago → Madrid", note:"Cesta domů", slug:"12-santiago-madrid", photos:[] },
+  { n:"post2", title:"Madrid → Brno", note:"Poslední úsek cesty domů", slug:"13-madrid-brno", photos:[] }
+];
+
 /* ======================= MINI ELEVATION SVG ======================= */
 function elevSvg(profile, w, h){
   const maxV = Math.max(...profile);
@@ -494,20 +502,75 @@ function elevSvg(profile, w, h){
 }
 
 /* ======================= RENDER STAGE CARDS ======================= */
+function buildPhotoMarkup(photos, slug, n, label){
+  return photos.length
+    ? photos.map((p,i) => `<img src="${p}" alt="${label}" loading="lazy" data-stage="${n}" data-idx="${i}">`).join("")
+    : Array.from({length:4}).map(() => `<div class="photo-slot">fotky sem přidáš do<br><code>photos/${slug}/</code></div>`).join("");
+}
+
+function attachCardHandlers(el, n, photos){
+  listElInstance.appendChild(el);
+  el.querySelector(".stage-summary").addEventListener("click", () => {
+    openStageCard(n);
+    focusStage(n);
+  });
+  el.querySelectorAll(".photo-grid img").forEach(img => {
+    img.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openLightbox(n, Number(img.dataset.idx));
+    });
+  });
+}
+
+function buildExtraCard(e){
+  const el = document.createElement("div");
+  el.className = "stage-card";
+  el.id = "card-" + e.n;
+
+  const thumbMarkup = e.photos.length
+    ? `<img src="${e.photos[0]}" alt="">`
+    : `<span>foto zde<br>bude zde</span>`;
+  const photoMarkup = buildPhotoMarkup(e.photos, e.slug, e.n, e.title);
+
+  el.innerHTML = `
+    <button class="stage-summary" aria-expanded="false">
+      <div class="stage-thumb">${thumbMarkup}</div>
+      <div>
+        <span class="stage-num">Cesta</span>
+        <h3 class="stage-route">${e.title}</h3>
+        <span class="stage-quick">${e.note}</span>
+      </div>
+      <span class="chevron">⌄</span>
+    </button>
+    <div class="stage-body">
+      <div class="stage-body-inner">
+        <div class="stage-body-pad">
+          <div class="photo-grid">${photoMarkup}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  return el;
+}
+
+let listElInstance;
 function renderStageCards(){
-  const listEl = document.getElementById("stage-list");
+  listElInstance = document.getElementById("stage-list");
+
+  extraStops.filter(e => e.n.startsWith("pre")).forEach(e => {
+    attachCardHandlers(buildExtraCard(e), e.n, e.photos);
+  });
+
   stages.forEach(s => {
     const el = document.createElement("div");
     el.className = "stage-card";
-    el.id = "etapa-" + s.n;
+    el.id = "card-" + s.n;
 
     const thumbMarkup = s.photos.length
       ? `<img src="${s.photos[0]}" alt="">`
       : `<span>foto z etapy<br>bude zde</span>`;
 
-    const photoMarkup = s.photos.length
-      ? s.photos.map((p,i) => `<img src="${p}" alt="Foto z etapy ${s.n}, ${s.from} → ${s.to}" loading="lazy" data-stage="${s.n}" data-idx="${i}">`).join("")
-      : Array.from({length:4}).map(() => `<div class="photo-slot">fotky z této etapy přidáš do<br><code>photos/${s.slug}/</code></div>`).join("");
+    const photoMarkup = buildPhotoMarkup(s.photos, s.slug, s.n, `Foto z etapy ${s.n}, ${s.from} → ${s.to}`);
 
     el.innerHTML = `
       <button class="stage-summary" aria-expanded="false">
@@ -535,30 +598,22 @@ function renderStageCards(){
       </div>
     `;
 
-    listEl.appendChild(el);
+    attachCardHandlers(el, s.n, s.photos);
+  });
 
-    el.querySelector(".stage-summary").addEventListener("click", () => {
-      openStageCard(s.n);
-      focusStage(s.n);
-    });
-
-    el.querySelectorAll(".photo-grid img").forEach(img => {
-      img.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openLightbox(s.n, Number(img.dataset.idx));
-      });
-    });
+  extraStops.filter(e => e.n.startsWith("post")).forEach(e => {
+    attachCardHandlers(buildExtraCard(e), e.n, e.photos);
   });
 }
 
 function openStageCard(n, scroll){
   document.querySelectorAll(".stage-card").forEach(c => {
-    const open = c.id === "etapa-" + n;
+    const open = c.id === "card-" + n;
     c.classList.toggle("is-open", open);
     c.querySelector(".stage-summary").setAttribute("aria-expanded", String(open));
   });
   if (scroll !== false) {
-    document.getElementById("etapa-" + n).scrollIntoView({ behavior:"smooth", block:"start" });
+    document.getElementById("card-" + n).scrollIntoView({ behavior:"smooth", block:"start" });
   }
 }
 
@@ -591,8 +646,12 @@ const lightboxImg = document.getElementById("lightboxImg");
 const lbCaption = document.getElementById("lbCaption");
 let lbStage = null, lbIdx = 0;
 
-function openLightbox(stageN, idx){
-  const s = stages.find(x => x.n === stageN);
+function findEntry(n){
+  return stages.find(x => x.n === n) || extraStops.find(x => x.n === n);
+}
+
+function openLightbox(n, idx){
+  const s = findEntry(n);
   if (!s || !s.photos.length) return;
   lbStage = s; lbIdx = idx;
   renderLightbox();
@@ -600,7 +659,8 @@ function openLightbox(stageN, idx){
 }
 function renderLightbox(){
   lightboxImg.src = lbStage.photos[lbIdx];
-  lbCaption.textContent = `Etapa ${lbStage.n} · ${lbStage.from} → ${lbStage.to} · ${lbIdx+1}/${lbStage.photos.length}`;
+  const label = lbStage.from ? `Etapa ${lbStage.n} · ${lbStage.from} → ${lbStage.to}` : lbStage.title;
+  lbCaption.textContent = `${label} · ${lbIdx+1}/${lbStage.photos.length}`;
 }
 function closeLightbox(){ lightboxEl.classList.add("hidden"); }
 document.getElementById("lbClose").addEventListener("click", closeLightbox);
@@ -746,6 +806,7 @@ async function init(){
   } catch (err) { /* manifest jeste neexistuje - vse pobezi bez fotek */ }
 
   stages.forEach(s => { s.photos = manifest[s.slug] || []; });
+  extraStops.forEach(e => { e.photos = manifest[e.slug] || []; });
 
   renderStageCards();
   drawFullProfile();
