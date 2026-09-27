@@ -1,53 +1,58 @@
-# Jak přidat fotky na stránku
+# Návod — Caminho Português da Costa
 
-1. Fotky z každé etapy nahraj do odpovídající složky v `photos/`, např.:
-   `photos/01-porto-vila-do-conde/1.jpg`, `2.jpg`, `3.jpg`...
+## Jak přidat fotky (automaticky, bez zásahu do kódu)
 
-2. Otevři `index.html` v textovém editoru (VS Code apod.) a najdi sekci
-   `STAGE DATA` (pole `stages`). U dané etapy dopiš cesty do pole `photos`, např.:
+1. Najdi si zkratku (slug) dané etapy — je to název podsložky v `photos/`:
 
-   ```js
-   {
-     n: 1, from:"Porto", to:"Vila Do Conde", km:36, asc:90, desc:110,
-     albergue:"Le Villageois",
-     coords:[[-8.6291,41.1579],[-8.7434,41.3534]],
-     photos:[
-       "photos/01-porto-vila-do-conde/1.jpg",
-       "photos/01-porto-vila-do-conde/2.jpg"
-     ]
-   },
-   ```
+   | Etapa | Slug                              |
+   |-------|------------------------------------|
+   | 1     | `01-porto`                         |
+   | 2     | `02-vila-do-conde`                 |
+   | 3     | `03-esposende`                     |
+   | 4     | `04-viana-do-castelo`              |
+   | 5     | `05-caminha`                       |
+   | 6     | `06-sao-pedro-da-torre`             |
+   | 7     | `07-o-porriño`                     |
+   | 8     | `08-redondela`                     |
+   | 9     | `09-pontevedra`                    |
+   | 10    | `10-caldas-de-reis`                |
+   | 11    | `11-padrón`                        |
 
-3. Ulož a otevři `index.html` v prohlížeči (nebo nahraj celou složku na hosting
-   typu Netlify / GitHub Pages) — fotky se automaticky zobrazí v mřížce dané etapy
-   místo šrafovaných placeholderů.
+   (Přesný slug uvidíš i přímo v `index.html` u dané etapy — generuje se z čísla a města "from".)
 
-## Poznámka k převýšení
+2. Nahraj fotky do `photos/<slug>/`, např. `photos/03-esposende/1.jpg`, `2.jpg`, `3.jpg`...
+   — pojmenuj je čísly podle pořadí na trase (`01.jpg`, `02.jpg`...), ať jdou na stránce ve správném pořadí.
 
-Hodnoty stoupání/klesání u jednotlivých etap jsou orientační, dopočítané z
-veřejně dostupných profilů etap Camino Portugués (Gronze a další). Pokud máš
-z cesty vlastní GPX záznam (hodinky, Strava, aplikace typu Wise Pilgrim), klidně
-čísla `asc` a `desc` u dané etapy v `index.html` uprav na přesná.
+3. Pushni (nebo nahraj přes GitHub web rozhraní — "Add file → Upload files").
 
-## Fotky na mapě
+4. Hotovo. Vercel při každém pushi automaticky spustí `generate-manifest.js`, ten projde všechny
+   složky v `photos/` a vygeneruje `photos-manifest.json` se seznamem fotek pro každou etapu.
+   Stránka si tenhle soubor při načtení stáhne a fotky sama zobrazí — do `index.html` se
+   **už nikdy nesahá**.
 
-Pokud fotka obsahuje GPS souřadnice v EXIF (běžné u fotek přímo z mobilu — pokud
-jsi je ale procházel přes nějaký editor nebo je stahoval z cloudu, EXIF se
-občas ořízne), stránka ji automaticky přidá na mapu jako malý kulatý náhled
-přesně v místě, kde byla pořízená. Stačí ji zapsat do pole `photos` u dané
-etapy stejně jako v kroku 2 výše — o zbytek se postará skript sám, nic
-navíc se nastavovat nemusí. Fotky bez GPS dat se prostě jen zobrazí v galerii
-u etapy a na mapě se nezobrazí.
+5. Mají-li fotky GPS údaje v EXIF (typicky mobil s povolenou polohou), objeví se navíc jako
+   zlaté kolečko přímo na mapě u dané etapy.
 
-## Etapy jdou rozkliknout
+## Jak to technicky funguje
 
-Na stránce jsou etapy sbalené — vidíš jen trasu, km a převýšení. Kliknutím na
-etapu (nebo na její bod na mapě) se rozbalí detail s grafem převýšení,
-noclehem a fotkami.
+- `generate-manifest.js` — Node skript, běží automaticky při každém nasazení na Vercelu
+  (nastaveno jako "Build Command" v nastavení projektu). Projde `photos/<slug>/`, seřadí
+  soubory podle jména a zapíše `photos-manifest.json`.
+- `index.html` — při načtení stránky si tenhle JSON stáhne (`fetch('photos-manifest.json')`)
+  a teprve pak vykreslí etapy, mapu i fotky. Pokud manifest ještě neexistuje (první deploy
+  bez fotek), stránka funguje normálně, jen bez fotek.
+- Formáty fotek, které skript bere v potaz: `.jpg`, `.jpeg`, `.png`, `.webp`.
 
-## Poznámka k mapě
+## Nastavení na Vercelu (jednorázové)
 
-Mapa ukazuje trasu jako spojnici mezi jednotlivými zastávkami (ne přesný
-zaznamenaný GPX track), protože žádný GPX soubor nebyl k dispozici. Pokud máš
-vlastní GPX z cesty, dá se snadno dotáhnout jako přesná trasa místo rovných úseků
-mezi body — stačí říct a doplním to.
+V projektu **camino** → Settings → Build & Development Settings:
+- Build Command: `node generate-manifest.js`
+- Output Directory: `.` (kořen repozitáře)
+
+(Toto jsem nastavil already přes API — pokud by build při prvním pushi selhal, zkontroluj
+tahle dvě pole ručně.)
+
+## Elevation data
+
+Stoupání/klesání všech etap pochází z GPS záznamu trasy v aplikaci Camino Ninja. Tvar
+mini-grafu u každé etapy je stylizovaný podle reálného profilu, ne bod po bodu z GPX.

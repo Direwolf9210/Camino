@@ -11,466 +11,452 @@
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.min.js"></script>
 <style>
-  :root{
-    --sand: #efebe1;
-    --paper: #f9f8f5;
-    --ink: #212631;
-    --ink-soft: #535965;
-    --azulejo: #223e77;
-    --azulejo-2: #4363a3;
-    --azulejo-pastel: #dae2f1;
-    --terracotta: #b16443;
-    --terracotta-pastel: #ebd5cb;
-    --gold: #c2a129;
-    --line: rgba(33,38,49,0.12);
-    --serif: 'Fraunces', serif;
-    --sans: 'Public Sans', sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:var(--sans);
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  a{color:inherit;text-decoration:none;}
-  img{max-width:100%;display:block;}
-  button{font-family:inherit;}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
-
-  /* ---------- Header ---------- */
-  header.site-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:20px 32px;
-    border-bottom:1px solid var(--line);
-    background:var(--paper);
-    position:sticky;
-    top:0;
-    z-index:20;
-  }
-  .logo{
-    font-family:var(--serif);
-    font-weight:600;
-    font-size:1.35rem;
-  }
-  nav.main-nav{display:flex;gap:34px;}
-  nav.main-nav a{font-size:0.98rem;color:var(--ink-soft);}
-  nav.main-nav a:hover{color:var(--azulejo);}
-  @media (max-width:800px){ nav.main-nav{display:none;} }
-
-  /* ---------- Hero ---------- */
-  section.hero{
-    background:var(--sand);
-    padding:56px 0 0;
-  }
-  .hero-grid{
-    display:grid;
-    grid-template-columns:1fr 1.15fr;
-    gap:0 56px;
-    align-items:center;
-  }
-  .hero-copy{padding-bottom:56px;}
-  .eyebrow{
-    color:var(--azulejo-2);
-    font-size:0.95rem;
-    margin-bottom:16px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  h1.headline{
-    font-family:var(--serif);
-    font-weight:600;
-    font-size:clamp(2.3rem, 3.6vw, 3.4rem);
-    line-height:1.06;
-    margin:0 0 20px;
-    max-width:14ch;
-  }
-  .hero-lede{
-    font-size:1.08rem;
-    color:var(--ink-soft);
-    max-width:46ch;
-    margin:0 0 8px;
-  }
-  #map{
-    width:100%;
-    height:620px;
-  }
-  .maplibregl-popup-content{
-    font-family:var(--sans);
-    font-size:0.88rem;
-    padding:0;
-    border-radius:2px;
-    overflow:hidden;
-  }
-  .popup-inner{padding:10px 12px;}
-  .maplibregl-popup-content strong{font-family:var(--serif);font-size:1rem;}
-  .popup-photo{width:190px;height:130px;object-fit:cover;display:block;cursor:pointer;}
-  @media (max-width:900px){
-    .hero-grid{grid-template-columns:1fr;}
-    #map{height:400px;}
-  }
-
-  /* ---------- Stat band ---------- */
-  .stat-band{
-    background:var(--azulejo);
-    color:#eef3f2;
-    padding:40px 0;
-  }
-  .stat-grid{
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:30px;
-  }
-  .stat-cell{display:flex;gap:14px;align-items:flex-start;}
-  .stat-cell svg{flex:0 0 auto;margin-top:2px;color:var(--gold);}
-  .stat-cell .num{
-    font-family:var(--serif);
-    font-weight:600;
-    font-size:1.5rem;
-    display:block;
-    color:#fff;
-  }
-  .stat-cell .lbl{font-size:0.85rem;color:#c7d6dc;}
-  @media (max-width:800px){ .stat-grid{grid-template-columns:1fr 1fr;} }
-
-  /* ---------- Section shell ---------- */
-  section.block{padding:64px 0;}
-  section.block.tight{padding-top:40px;}
-  h2.section-title{
-    font-family:var(--serif);
-    font-weight:600;
-    font-size:2rem;
-    margin:0 0 8px;
-  }
-  p.section-lede{
-    color:var(--ink-soft);
-    max-width:60ch;
-    margin:0 0 34px;
-  }
-
-  /* full elevation profile */
-  .profile-strip svg{width:100%;height:auto;display:block;}
-  .profile-caption{font-size:0.82rem;color:var(--ink-soft);margin-top:8px;}
-
-  /* ---------- Intro / o ceste ---------- */
-  .intro-row{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:48px;
-    align-items:start;
-  }
-  .intro-row p{color:var(--ink-soft);}
-  .prestart{
-    background:var(--terracotta-pastel);
-    border-left:3px solid var(--terracotta);
-    padding:16px 20px;
-    font-size:0.95rem;
-  }
-  .prestart strong{font-family:var(--serif);}
-  @media (max-width:800px){ .intro-row{grid-template-columns:1fr;} }
-
-  /* ---------- Stage cards ---------- */
-  .stage-grid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:0;
-    border-top:1px solid var(--line);
-  }
-  .stage-card{
-    border-bottom:1px solid var(--line);
-    padding:34px 0;
-    scroll-margin-top:90px;
-  }
-  .stage-card.is-highlighted{background:var(--sand);}
-  .stage-summary{
-    display:grid;
-    grid-template-columns:220px 1fr auto;
-    gap:26px;
-    align-items:center;
-    cursor:pointer;
-    background:none;
-    border:none;
-    width:100%;
-    text-align:left;
-    padding:0;
-    color:inherit;
-  }
-  .stage-thumb{
-    width:220px;
-    height:140px;
-    object-fit:cover;
-    background:var(--sand);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#a89f86;
-    font-size:0.72rem;
-    text-align:center;
-    border:1.5px dashed #cabf9e;
-    padding:10px;
-  }
-  .stage-thumb img{width:100%;height:100%;object-fit:cover;}
-  .stage-num{
-    font-family:var(--serif);
-    color:var(--gold);
-    font-size:0.95rem;
-    margin-bottom:4px;
-    display:block;
-  }
-  .stage-route{
-    font-family:var(--serif);
-    font-weight:600;
-    font-size:1.5rem;
-    margin:0 0 8px;
-  }
-  .stage-route .arrow{color:var(--terracotta);padding:0 6px;font-weight:400;}
-  .stage-quick{color:var(--ink-soft);font-size:0.94rem;}
-  .chevron{
-    font-size:1.4rem;
-    color:var(--azulejo-2);
-    transition:transform 0.2s ease;
-  }
-  .stage-card.is-open .chevron{transform:rotate(180deg);}
-
-  .stage-body{
-    display:grid;
-    grid-template-rows:0fr;
-    transition:grid-template-rows 0.25s ease;
-  }
-  .stage-body-inner{overflow:hidden;}
-  .stage-card.is-open .stage-body{grid-template-rows:1fr;}
-  .stage-body-pad{padding:28px 0 4px 246px;}
-  @media (max-width:760px){
-    .stage-summary{grid-template-columns:1fr auto;}
-    .stage-thumb{display:none;}
-    .stage-body-pad{padding-left:0;}
-  }
-
-  .stage-meta{display:flex;flex-wrap:wrap;gap:22px 34px;margin-bottom:18px;}
-  .meta-item{font-size:0.92rem;}
-  .meta-item .meta-num{
-    font-family:var(--serif);
-    font-size:1.2rem;
-    color:var(--azulejo);
-    display:block;
-    line-height:1.2;
-  }
-  .meta-item .meta-lbl{color:var(--ink-soft);font-size:0.8rem;}
-
-  .elev-mini{margin:4px 0 18px;}
-  .elev-mini svg{display:block;}
-
-  .albergue-box{
-    display:flex;
-    gap:10px;
-    align-items:baseline;
-    background:var(--azulejo-pastel);
-    border-left:3px solid var(--azulejo-2);
-    padding:11px 16px;
-    font-size:0.92rem;
-    margin-bottom:22px;
-    max-width:fit-content;
-  }
-  .albergue-box .al-lbl{color:var(--azulejo);font-size:0.8rem;white-space:nowrap;}
-  .albergue-box .al-name{font-weight:600;}
-
-  .photo-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
-    gap:10px;
-  }
-  .photo-grid img{
-    width:100%;
-    height:150px;
-    object-fit:cover;
-    cursor:pointer;
-  }
-  .photo-slot{
-    height:150px;
-    border:1.5px dashed #cabf9e;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    color:#948c72;
-    font-size:0.78rem;
-    padding:10px;
-    background:repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(0,0,0,0.02) 8px, rgba(0,0,0,0.02) 16px);
-  }
-
-  /* ---------- Lightbox ---------- */
-  .lightbox{
-    position:fixed;inset:0;background:rgba(20,20,15,0.92);
-    display:flex;align-items:center;justify-content:center;
-    z-index:100;
-  }
-  .lightbox.hidden{display:none;}
-  .lightbox img{max-width:88vw;max-height:82vh;object-fit:contain;}
-  .lb-btn{
-    position:absolute;top:50%;transform:translateY(-50%);
-    background:none;border:none;color:#fff;font-size:2.6rem;cursor:pointer;
-    padding:10px 20px;opacity:0.8;
-  }
-  .lb-btn:hover{opacity:1;}
-  .lb-prev{left:6px;}
-  .lb-next{right:6px;}
-  .lb-close{
-    position:absolute;top:18px;right:26px;background:none;border:none;
-    color:#fff;font-size:2rem;cursor:pointer;opacity:0.8;
-  }
-  .lb-close:hover{opacity:1;}
-  .lb-caption{
-    position:absolute;bottom:24px;left:0;right:0;text-align:center;
-    color:#e6e2d6;font-size:0.9rem;
-  }
-
-  /* ---------- Footer ---------- */
-  footer{padding:40px 0 60px;color:var(--ink-soft);font-size:0.85rem;border-top:1px solid var(--line);}
-  footer .note{max-width:70ch;margin-bottom:8px;}
-  footer code{background:var(--sand);padding:1px 5px;}
+:root{
+--sand: #efebe1;
+--paper: #f9f8f5;
+--ink: #212631;
+--ink-soft: #535965;
+--azulejo: #223e77;
+--azulejo-2: #4363a3;
+--azulejo-pastel: #dae2f1;
+--terracotta: #b16443;
+--terracotta-pastel: #ebd5cb;
+--gold: #c2a129;
+--line: rgba(33,38,49,0.12);
+--serif: 'Fraunces', serif;
+--sans: 'Public Sans', sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+margin:0;
+background:var(--paper);
+color:var(--ink);
+font-family:var(--sans);
+line-height:1.5;
+-webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+button{font-family:inherit;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+/* ---------- Header ---------- */
+header.site-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:20px 32px;
+border-bottom:1px solid var(--line);
+background:var(--paper);
+position:sticky;
+top:0;
+z-index:20;
+}
+.logo{
+font-family:var(--serif);
+font-weight:600;
+font-size:1.35rem;
+}
+nav.main-nav{display:flex;gap:34px;}
+nav.main-nav a{font-size:0.98rem;color:var(--ink-soft);}
+nav.main-nav a:hover{color:var(--azulejo);}
+@media (max-width:800px){ nav.main-nav{display:none;} }
+/* ---------- Hero ---------- */
+section.hero{
+background:var(--sand);
+padding:56px 0 0;
+}
+.hero-grid{
+display:grid;
+grid-template-columns:1fr 1.15fr;
+gap:0 56px;
+align-items:center;
+}
+.hero-copy{padding-bottom:56px;}
+.eyebrow{
+color:var(--azulejo-2);
+font-size:0.95rem;
+margin-bottom:16px;
+display:flex;
+align-items:center;
+gap:8px;
+}
+h1.headline{
+font-family:var(--serif);
+font-weight:600;
+font-size:clamp(2.3rem, 3.6vw, 3.4rem);
+line-height:1.06;
+margin:0 0 20px;
+max-width:14ch;
+}
+.hero-lede{
+font-size:1.08rem;
+color:var(--ink-soft);
+max-width:46ch;
+margin:0 0 8px;
+}
+#map{
+width:100%;
+height:620px;
+}
+.maplibregl-popup-content{
+font-family:var(--sans);
+font-size:0.88rem;
+padding:0;
+border-radius:2px;
+overflow:hidden;
+}
+.popup-inner{padding:10px 12px;}
+.maplibregl-popup-content strong{font-family:var(--serif);font-size:1rem;}
+.popup-photo{width:190px;height:130px;object-fit:cover;display:block;cursor:pointer;}
+@media (max-width:900px){
+.hero-grid{grid-template-columns:1fr;}
+#map{height:400px;}
+}
+/* ---------- Stat band ---------- */
+.stat-band{
+background:var(--azulejo);
+color:#eef3f2;
+padding:40px 0;
+}
+.stat-grid{
+display:grid;
+grid-template-columns:repeat(4, 1fr);
+gap:30px;
+}
+.stat-cell{display:flex;gap:14px;align-items:flex-start;}
+.stat-cell svg{flex:0 0 auto;margin-top:2px;color:var(--gold);}
+.stat-cell .num{
+font-family:var(--serif);
+font-weight:600;
+font-size:1.5rem;
+display:block;
+color:#fff;
+}
+.stat-cell .lbl{font-size:0.85rem;color:#c7d6dc;}
+@media (max-width:800px){ .stat-grid{grid-template-columns:1fr 1fr;} }
+/* ---------- Section shell ---------- */
+section.block{padding:64px 0;}
+section.block.tight{padding-top:40px;}
+h2.section-title{
+font-family:var(--serif);
+font-weight:600;
+font-size:2rem;
+margin:0 0 8px;
+}
+p.section-lede{
+color:var(--ink-soft);
+max-width:60ch;
+margin:0 0 34px;
+}
+/* full elevation profile */
+.profile-strip svg{width:100%;height:auto;display:block;}
+.profile-caption{font-size:0.82rem;color:var(--ink-soft);margin-top:8px;}
+/* ---------- Intro / o ceste ---------- */
+.intro-row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:48px;
+align-items:start;
+}
+.intro-row p{color:var(--ink-soft);}
+.prestart{
+background:var(--terracotta-pastel);
+border-left:3px solid var(--terracotta);
+padding:16px 20px;
+font-size:0.95rem;
+}
+.prestart strong{font-family:var(--serif);}
+@media (max-width:800px){ .intro-row{grid-template-columns:1fr;} }
+/* ---------- Stage cards ---------- */
+.stage-grid{
+display:grid;
+grid-template-columns:1fr;
+gap:0;
+border-top:1px solid var(--line);
+}
+.stage-card{
+border-bottom:1px solid var(--line);
+padding:34px 0;
+scroll-margin-top:90px;
+}
+.stage-card.is-highlighted{background:var(--sand);}
+.stage-summary{
+display:grid;
+grid-template-columns:220px 1fr auto;
+gap:26px;
+align-items:center;
+cursor:pointer;
+background:none;
+border:none;
+width:100%;
+text-align:left;
+padding:0;
+color:inherit;
+}
+.stage-thumb{
+width:220px;
+height:140px;
+object-fit:cover;
+background:var(--sand);
+display:flex;
+align-items:center;
+justify-content:center;
+color:#a89f86;
+font-size:0.72rem;
+text-align:center;
+border:1.5px dashed #cabf9e;
+padding:10px;
+}
+.stage-thumb img{width:100%;height:100%;object-fit:cover;}
+.stage-num{
+font-family:var(--serif);
+color:var(--gold);
+font-size:0.95rem;
+margin-bottom:4px;
+display:block;
+}
+.stage-route{
+font-family:var(--serif);
+font-weight:600;
+font-size:1.5rem;
+margin:0 0 8px;
+}
+.stage-route .arrow{color:var(--terracotta);padding:0 6px;font-weight:400;}
+.stage-quick{color:var(--ink-soft);font-size:0.94rem;}
+.chevron{
+font-size:1.4rem;
+color:var(--azulejo-2);
+transition:transform 0.2s ease;
+}
+.stage-card.is-open .chevron{transform:rotate(180deg);}
+.stage-body{
+display:grid;
+grid-template-rows:0fr;
+transition:grid-template-rows 0.25s ease;
+}
+.stage-body-inner{overflow:hidden;}
+.stage-card.is-open .stage-body{grid-template-rows:1fr;}
+.stage-body-pad{padding:28px 0 4px 246px;}
+@media (max-width:760px){
+.stage-summary{grid-template-columns:1fr auto;}
+.stage-thumb{display:none;}
+.stage-body-pad{padding-left:0;}
+}
+.stage-meta{display:flex;flex-wrap:wrap;gap:22px 34px;margin-bottom:18px;}
+.meta-item{font-size:0.92rem;}
+.meta-item .meta-num{
+font-family:var(--serif);
+font-size:1.2rem;
+color:var(--azulejo);
+display:block;
+line-height:1.2;
+}
+.meta-item .meta-lbl{color:var(--ink-soft);font-size:0.8rem;}
+.elev-mini{margin:4px 0 18px;}
+.elev-mini svg{display:block;}
+.albergue-box{
+display:flex;
+gap:10px;
+align-items:baseline;
+background:var(--azulejo-pastel);
+border-left:3px solid var(--azulejo-2);
+padding:11px 16px;
+font-size:0.92rem;
+margin-bottom:22px;
+max-width:fit-content;
+}
+.albergue-box .al-lbl{color:var(--azulejo);font-size:0.8rem;white-space:nowrap;}
+.albergue-box .al-name{font-weight:600;}
+.photo-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+gap:10px;
+}
+.photo-grid img{
+width:100%;
+height:150px;
+object-fit:cover;
+cursor:pointer;
+}
+.photo-slot{
+height:150px;
+border:1.5px dashed #cabf9e;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+color:#948c72;
+font-size:0.78rem;
+padding:10px;
+background:repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(0,0,0,0.02) 8px, rgba(0,0,0,0.02) 16px);
+}
+/* ---------- Lightbox ---------- */
+.lightbox{
+position:fixed;inset:0;background:rgba(20,20,15,0.92);
+display:flex;align-items:center;justify-content:center;
+z-index:100;
+}
+.lightbox.hidden{display:none;}
+.lightbox img{max-width:88vw;max-height:82vh;object-fit:contain;}
+.lb-btn{
+position:absolute;top:50%;transform:translateY(-50%);
+background:none;border:none;color:#fff;font-size:2.6rem;cursor:pointer;
+padding:10px 20px;opacity:0.8;
+}
+.lb-btn:hover{opacity:1;}
+.lb-prev{left:6px;}
+.lb-next{right:6px;}
+.lb-close{
+position:absolute;top:18px;right:26px;background:none;border:none;
+color:#fff;font-size:2rem;cursor:pointer;opacity:0.8;
+}
+.lb-close:hover{opacity:1;}
+.lb-caption{
+position:absolute;bottom:24px;left:0;right:0;text-align:center;
+color:#e6e2d6;font-size:0.9rem;
+}
+/* ---------- Footer ---------- */
+footer{padding:40px 0 60px;color:var(--ink-soft);font-size:0.85rem;border-top:1px solid var(--line);}
+footer .note{max-width:70ch;margin-bottom:8px;}
+footer code{background:var(--sand);padding:1px 5px;}
 </style>
 </head>
 <body>
 
 <header class="site-header">
-  <div class="logo">Caminho Português</div>
-  <nav class="main-nav">
-    <a href="#hero">Úvod</a>
-    <a href="#o-ceste">O cestě</a>
-    <a href="#profil">Profil trasy</a>
-    <a href="#etapy">Etapy</a>
-  </nav>
+<div class="logo">Caminho Português</div>
+<nav class="main-nav">
+<a href="#hero">Úvod</a>
+<a href="#o-ceste">O cestě</a>
+<a href="#profil">Profil trasy</a>
+<a href="#etapy">Etapy</a>
+</nav>
 </header>
 
 <section class="hero" id="hero">
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <div class="eyebrow">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 2 4 6 4 10c0 6 8 12 8 12s8-6 8-12c0-4-3-8-8-8Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>
-        Porto → Santiago de Compostela
-      </div>
-      <h1 class="headline">Moje další kapitola začala u první mušle.</h1>
-      <p class="hero-lede">Jedenáct dní po žluté šipce od Douro po galicijské vnitrozemí — klikni na mapě na kteroukoli etapu a uvidíš fotky přesně z toho úseku, kudy jsem šel.</p>
-    </div>
-    <div id="map"></div>
-  </div>
+<div class="wrap hero-grid">
+<div class="hero-copy">
+<div class="eyebrow">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 2 4 6 4 10c0 6 8 12 8 12s8-6 8-12c0-4-3-8-8-8Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>
+Porto → Santiago de Compostela
+</div>
+<h1 class="headline">Moje další kapitola začala u první mušle.</h1>
+<p class="hero-lede">Jedenáct dní po žluté šipce od Douro po galicijské vnitrozemí — klikni na mapě na kteroukoli etapu a uvidíš fotky přesně z toho úseku, kudy jsem šel.</p>
+</div>
+<div id="map"></div>
+</div>
 </section>
 
 <div class="stat-band">
-  <div class="wrap stat-grid">
-    <div class="stat-cell">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 12l5-5M3 12l5 5" stroke="currentColor" stroke-width="1.7"/></svg>
-      <div><span class="num">269 km</span><span class="lbl">celková vzdálenost</span></div>
-    </div>
-    <div class="stat-cell">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="1" stroke="currentColor" stroke-width="1.7"/></svg>
-      <div><span class="num">11</span><span class="lbl">etap</span></div>
-    </div>
-    <div class="stat-cell">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 18l5-9 4 6 3-5 6 8" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
-      <div><span class="num">~4 840 m</span><span class="lbl">celkové převýšení nahoru</span></div>
-    </div>
-    <div class="stat-cell">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.5 2.5 2.5 14.5 0 17M12 3.5c-2.5 2.5-2.5 14.5 0 17" stroke="currentColor" stroke-width="1.4"/></svg>
-      <div><span class="num">2</span><span class="lbl">země — Portugalsko a Španělsko</span></div>
-    </div>
-  </div>
+<div class="wrap stat-grid">
+<div class="stat-cell">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 12l5-5M3 12l5 5" stroke="currentColor" stroke-width="1.7"/></svg>
+<div><span class="num">269 km</span><span class="lbl">celková vzdálenost</span></div>
+</div>
+<div class="stat-cell">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="1" stroke="currentColor" stroke-width="1.7"/></svg>
+<div><span class="num">11</span><span class="lbl">etap</span></div>
+</div>
+<div class="stat-cell">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 18l5-9 4 6 3-5 6 8" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+<div><span class="num">~4 840 m</span><span class="lbl">celkové převýšení nahoru</span></div>
+</div>
+<div class="stat-cell">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.5 2.5 2.5 14.5 0 17M12 3.5c-2.5 2.5-2.5 14.5 0 17" stroke="currentColor" stroke-width="1.4"/></svg>
+<div><span class="num">2</span><span class="lbl">země — Portugalsko a Španělsko</span></div>
+</div>
+</div>
 </div>
 
 <section class="block tight" id="o-ceste">
-  <div class="wrap">
-    <div class="intro-row">
-      <div>
-        <h2 class="section-title">O cestě</h2>
-        <p>Caminho Português da Costa jde od Porta podél pobřeží a řeky Minho, u O Porriña se napojuje na centrální trasu a poslední etapy vedou přes Pontevedru, Padrón a nakonec do Santiaga de Compostela. Rozdělil jsem si ji na jedenáct etap podle toho, kde se mi povedlo sehnat nocleh.</p>
-      </div>
-      <div class="prestart">
-        <strong>Před startem</strong><br>
-        Porto — noc v <strong>The House of Sandeman</strong>, než jsem druhý den ráno vyrazil na Camino.
-      </div>
-    </div>
-  </div>
+<div class="wrap">
+<div class="intro-row">
+<div>
+<h2 class="section-title">O cestě</h2>
+<p>Caminho Português da Costa jde od Porta podél pobřeží a řeky Minho, u O Porriña se napojuje na centrální trasu a poslední etapy vedou přes Pontevedru, Padrón a nakonec do Santiaga de Compostela. Rozdělil jsem si ji na jedenáct etap podle toho, kde se mi povedlo sehnat nocleh.</p>
+</div>
+<div class="prestart">
+<strong>Před startem</strong><br>
+Porto — noc v <strong>The House of Sandeman</strong>, než jsem druhý den ráno vyrazil na Camino.
+</div>
+</div>
+</div>
 </section>
 
 <section class="block tight" id="profil">
-  <div class="wrap">
-    <h2 class="section-title">Profil trasy</h2>
-    <p class="section-lede">Výškový profil celé cesty, etapa po etapě — vyšší vrchol znamená víc stoupání ten den.</p>
-    <div class="profile-strip">
-      <svg id="fullProfile" viewBox="0 0 1000 110" preserveAspectRatio="none"></svg>
-    </div>
-    <div class="profile-caption">Podle GPS záznamu trasy z Camino Ninja.</div>
-  </div>
+<div class="wrap">
+<h2 class="section-title">Profil trasy</h2>
+<p class="section-lede">Výškový profil celé cesty, etapa po etapě — vyšší vrchol znamená víc stoupání ten den.</p>
+<div class="profile-strip">
+<svg id="fullProfile" viewBox="0 0 1000 110" preserveAspectRatio="none"></svg>
+</div>
+<div class="profile-caption">Podle GPS záznamu trasy z Camino Ninja.</div>
+</div>
 </section>
 
 <section class="block" id="etapy">
-  <div class="wrap">
-    <h2 class="section-title">Etapy</h2>
-    <p class="section-lede">Klikni na etapu pro podrobnosti — převýšení, nocleh a fotky. Stejně tak funguje kliknutí na trasu nebo zastávku v mapě nahoře.</p>
-    <div class="stage-grid" id="stage-list"></div>
-  </div>
+<div class="wrap">
+<h2 class="section-title">Etapy</h2>
+<p class="section-lede">Klikni na etapu pro podrobnosti — převýšení, nocleh a fotky. Stejně tak funguje kliknutí na trasu nebo zastávku v mapě nahoře.</p>
+<div class="stage-grid" id="stage-list"></div>
+</div>
 </section>
 
 <footer>
-  <div class="wrap">
-    <p class="note">Kilometráž a ubytování podle vlastních poznámek z cesty. Stoupání a klesání všech etap pochází přímo z GPS záznamu trasy (Camino Ninja); tvar mini-grafu u každé etapy je stylizovaný podle skutečného profilu, ne bod po bodu z GPX.</p>
-    <p class="note">Fotky doplníš tak, že je nahraješ do složky <code>photos/&lt;etapa&gt;/</code> a přidáš jejich názvy do pole <code>photos</code> u dané etapy v sekci STAGE DATA v tomto souboru — viz NAVOD.md. Mají-li GPS data v EXIF, objeví se samy i na mapě.</p>
-  </div>
+<div class="wrap">
+<p class="note">Kilometráž a ubytování podle vlastních poznámek z cesty. Stoupání a klesání všech etap pochází přímo z GPS záznamu trasy (Camino Ninja); tvar mini-grafu u každé etapy je stylizovaný podle skutečného profilu, ne bod po bodu z GPX.</p>
+<p class="note">Fotky doplníš tak, že je nahraješ do složky <code>photos/&lt;etapa&gt;/</code> a pushneš — seznam fotek pro každou etapu se generuje automaticky při nasazení (viz NAVOD.md), takže se do kódu už nesahá.</p>
+</div>
 </footer>
 
 <div class="lightbox hidden" id="lightbox">
-  <button class="lb-close" id="lbClose">×</button>
-  <button class="lb-btn lb-prev" id="lbPrev">‹</button>
-  <img id="lightboxImg" src="" alt="">
-  <button class="lb-btn lb-next" id="lbNext">›</button>
-  <div class="lb-caption" id="lbCaption"></div>
+<button class="lb-close" id="lbClose">×</button>
+<button class="lb-btn lb-prev" id="lbPrev">‹</button>
+<img id="lightboxImg" src="" alt="">
+<button class="lb-btn lb-next" id="lbNext">›</button>
+<div class="lb-caption" id="lbCaption"></div>
 </div>
 
 <script>
 /* ======================= STAGE DATA ======================= */
 /* Souřadnice měst jsou přibližné (pro přehledovou mapu, ne přesnou GPX trasu). */
-/* Do pole "photos" doplň relativní cesty k fotkám, např. "photos/01-porto-vila-do-conde/1.jpg" */
-
+/* Pole "photos" se NEPLNÍ ručně - doplní se samo z photos-manifest.json, */
+/* který se vygeneruje při buildu ze slozky photos/<slug>/ (viz generate-manifest.js). */
 const stages = [
-  { n:1, from:"Porto", to:"Vila Do Conde", km:36, asc:354, desc:404,
-    albergue:"Le Villageois", coords:[[-8.6291,41.1579],[-8.7434,41.3534]], photos:[],
-    profile:[20,60,100,95,70,55,90,65,40,25,10] },
-  { n:2, from:"Vila Do Conde", to:"Esposende", km:30, asc:161, desc:164,
-    albergue:"Hostel Eleven", coords:[[-8.7434,41.3534],[-8.7827,41.5357]], photos:[],
-    profile:[25,8,6,10,12,9,14,11,15,12,8] },
-  { n:3, from:"Esposende", to:"Viana Do Castelo", km:25, asc:503, desc:499,
-    albergue:"Enjoy Viana - Guest House", coords:[[-8.7827,41.5357],[-8.8330,41.6932]], photos:[],
-    profile:[10,30,55,90,130,80,45,55,100,40,10] },
-  { n:4, from:"Viana Do Castelo", to:"Caminha", km:25, asc:609, desc:612,
-    albergue:"Bom Caminha - Private Albergue for Pilgrims", coords:[[-8.8330,41.6932],[-8.8377,41.8756]], photos:[],
-    profile:[5,40,90,60,30,70,140,90,40,15,5] },
-  { n:5, from:"Caminha", to:"Sao Pedro Da Torre", km:23, asc:619, desc:603,
-    albergue:"Alvorada Medieval, AL", coords:[[-8.8377,41.8756],[-8.6892,41.9975]], photos:[],
-    profile:[12,15,90,45,94,70,55,75,80,50,30] },
-  { n:6, from:"Sao Pedro Da Torre", to:"O Porriño", km:22, asc:368, desc:360,
-    albergue:"Albergue Camino Santiago Porrino - City Centre", coords:[[-8.6892,41.9975],[-8.6386,42.1391]], photos:[],
-    profile:[15,85,15,20,15,25,15,28,20,38,18] },
-  { n:7, from:"O Porriño", to:"Redondela", km:16, asc:313, desc:338,
-    albergue:"Santiago de Vilavella", coords:[[-8.6386,42.1391],[-8.6067,42.2842]], photos:[],
-    profile:[50,55,50,65,150,225,190,60,20,12,10] },
-  { n:8, from:"Redondela", to:"Pontevedra", km:25, asc:527, desc:512,
-    albergue:"Slow City Hostel Pontevedra", coords:[[-8.6067,42.2842],[-8.6444,42.4310]], photos:[],
-    profile:[10,140,55,60,138,25,15,18,15,18,10] },
-  { n:9, from:"Pontevedra", to:"Caldas De Reis", km:25, asc:382, desc:381,
-    albergue:"Albergue Albor", coords:[[-8.6444,42.4310],[-8.6394,42.6028]], photos:[],
-    profile:[15,30,90,110,60,30,22,20,28,34,15] },
-  { n:10, from:"Caldas De Reis", to:"Padrón", km:17, asc:379, desc:394,
-    albergue:"Hostel & Rooms O Alberque de Meiga", coords:[[-8.6394,42.6028],[-8.6602,42.7434]], photos:[],
-    profile:[20,110,150,165,120,70,25,18,15,12,10] },
-  { n:11, from:"Padrón", to:"Santiago De Compostela", km:25, asc:625, desc:380,
-    albergue:"Blanco Albergue", coords:[[-8.6602,42.7434],[-8.5456,42.8805]], photos:[],
-    profile:[15,20,35,50,70,110,160,200,150,190,255] }
+{ n:1, from:"Porto", to:"Vila Do Conde", km:36, asc:354, desc:404,
+  albergue:"Le Villageois", coords:[[-8.6291,41.1579],[-8.7434,41.3534]], photos:[],
+  profile:[20,60,100,95,70,55,90,65,40,25,10] },
+{ n:2, from:"Vila Do Conde", to:"Esposende", km:30, asc:161, desc:164,
+  albergue:"Hostel Eleven", coords:[[-8.7434,41.3534],[-8.7827,41.5357]], photos:[],
+  profile:[25,8,6,10,12,9,14,11,15,12,8] },
+{ n:3, from:"Esposende", to:"Viana Do Castelo", km:25, asc:503, desc:499,
+  albergue:"Enjoy Viana - Guest House", coords:[[-8.7827,41.5357],[-8.8330,41.6932]], photos:[],
+  profile:[10,30,55,90,130,80,45,55,100,40,10] },
+{ n:4, from:"Viana Do Castelo", to:"Caminha", km:25, asc:609, desc:612,
+  albergue:"Bom Caminha - Private Albergue for Pilgrims", coords:[[-8.8330,41.6932],[-8.8377,41.8756]], photos:[],
+  profile:[5,40,90,60,30,70,140,90,40,15,5] },
+{ n:5, from:"Caminha", to:"Sao Pedro Da Torre", km:23, asc:619, desc:603,
+  albergue:"Alvorada Medieval, AL", coords:[[-8.8377,41.8756],[-8.6892,41.9975]], photos:[],
+  profile:[12,15,90,45,94,70,55,75,80,50,30] },
+{ n:6, from:"Sao Pedro Da Torre", to:"O Porriño", km:22, asc:368, desc:360,
+  albergue:"Albergue Camino Santiago Porrino - City Centre", coords:[[-8.6892,41.9975],[-8.6386,42.1391]], photos:[],
+  profile:[15,85,15,20,15,25,15,28,20,38,18] },
+{ n:7, from:"O Porriño", to:"Redondela", km:16, asc:313, desc:338,
+  albergue:"Santiago de Vilavella", coords:[[-8.6386,42.1391],[-8.6067,42.2842]], photos:[],
+  profile:[50,55,50,65,150,225,190,60,20,12,10] },
+{ n:8, from:"Redondela", to:"Pontevedra", km:25, asc:527, desc:512,
+  albergue:"Slow City Hostel Pontevedra", coords:[[-8.6067,42.2842],[-8.6444,42.4310]], photos:[],
+  profile:[10,140,55,60,138,25,15,18,15,18,10] },
+{ n:9, from:"Pontevedra", to:"Caldas De Reis", km:25, asc:382, desc:381,
+  albergue:"Albergue Albor", coords:[[-8.6444,42.4310],[-8.6394,42.6028]], photos:[],
+  profile:[15,30,90,110,60,30,22,20,28,34,15] },
+{ n:10, from:"Caldas De Reis", to:"Padrón", km:17, asc:379, desc:394,
+  albergue:"Hostel & Rooms O Alberque de Meiga", coords:[[-8.6394,42.6028],[-8.6602,42.7434]], photos:[],
+  profile:[20,110,150,165,120,70,25,18,15,12,10] },
+{ n:11, from:"Padrón", to:"Santiago De Compostela", km:25, asc:625, desc:380,
+  albergue:"Blanco Albergue", coords:[[-8.6602,42.7434],[-8.5456,42.8805]], photos:[],
+  profile:[15,20,35,50,70,110,160,200,150,190,255] }
 ];
 
 stages.forEach(s => {
@@ -498,60 +484,62 @@ function elevSvg(profile, w, h){
 }
 
 /* ======================= RENDER STAGE CARDS ======================= */
-const listEl = document.getElementById("stage-list");
+function renderStageCards(){
+  const listEl = document.getElementById("stage-list");
+  stages.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "stage-card";
+    el.id = "etapa-" + s.n;
 
-stages.forEach(s => {
-  const el = document.createElement("div");
-  el.className = "stage-card";
-  el.id = "etapa-" + s.n;
+    const thumbMarkup = s.photos.length
+      ? `<img src="${s.photos[0]}" alt="">`
+      : `<span>foto z etapy<br>bude zde</span>`;
 
-  const thumbMarkup = s.photos.length
-    ? `<img src="${s.photos[0]}" alt="">`
-    : `<span>foto z etapy<br>bude zde</span>`;
+    const photoMarkup = s.photos.length
+      ? s.photos.map((p,i) => `<img src="${p}" alt="Foto z etapy ${s.n}, ${s.from} → ${s.to}" loading="lazy" data-stage="${s.n}" data-idx="${i}">`).join("")
+      : Array.from({length:4}).map(() => `<div class="photo-slot">fotky z této etapy přidáš do<br><code>photos/${s.slug}/</code></div>`).join("");
 
-  const photoMarkup = s.photos.length
-    ? s.photos.map((p,i) => `<img src="${p}" alt="Foto z etapy ${s.n}, ${s.from} → ${s.to}" loading="lazy" data-stage="${s.n}" data-idx="${i}">`).join("")
-    : Array.from({length:4}).map(() => `<div class="photo-slot">fotky z této etapy přidáš do<br><code>photos/${s.slug}/</code></div>`).join("");
-
-  el.innerHTML = `
-    <button class="stage-summary" aria-expanded="false">
-      <div class="stage-thumb">${thumbMarkup}</div>
-      <div>
-        <span class="stage-num">Etapa ${String(s.n).padStart(2,"0")}</span>
-        <h3 class="stage-route">${s.from}<span class="arrow">→</span>${s.to}</h3>
-        <span class="stage-quick">${s.km} km · +${s.asc} m / −${s.desc} m${s.estimated ? " · odhad" : ""}</span>
-      </div>
-      <span class="chevron">⌄</span>
-    </button>
-    <div class="stage-body">
-      <div class="stage-body-inner">
-        <div class="stage-body-pad">
-          <div class="stage-meta">
-            <div class="meta-item"><span class="meta-num">${s.km} km</span><span class="meta-lbl">vzdálenost</span></div>
-            <div class="meta-item"><span class="meta-num">+${s.asc} m</span><span class="meta-lbl">stoupání${s.estimated ? " (odhad)" : ""}</span></div>
-            <div class="meta-item"><span class="meta-num">−${s.desc} m</span><span class="meta-lbl">klesání${s.estimated ? " (odhad)" : ""}</span></div>
+    el.innerHTML = `
+      <button class="stage-summary" aria-expanded="false">
+        <div class="stage-thumb">${thumbMarkup}</div>
+        <div>
+          <span class="stage-num">Etapa ${String(s.n).padStart(2,"0")}</span>
+          <h3 class="stage-route">${s.from}<span class="arrow">→</span>${s.to}</h3>
+          <span class="stage-quick">${s.km} km · +${s.asc} m / −${s.desc} m${s.estimated ? " · odhad" : ""}</span>
+        </div>
+        <span class="chevron">⌄</span>
+      </button>
+      <div class="stage-body">
+        <div class="stage-body-inner">
+          <div class="stage-body-pad">
+            <div class="stage-meta">
+              <div class="meta-item"><span class="meta-num">${s.km} km</span><span class="meta-lbl">vzdálenost</span></div>
+              <div class="meta-item"><span class="meta-num">+${s.asc} m</span><span class="meta-lbl">stoupání${s.estimated ? " (odhad)" : ""}</span></div>
+              <div class="meta-item"><span class="meta-num">−${s.desc} m</span><span class="meta-lbl">klesání${s.estimated ? " (odhad)" : ""}</span></div>
+            </div>
+            <div class="elev-mini">${elevSvg(s.profile, 320, 54)}</div>
+            <div class="albergue-box"><span class="al-lbl">Nocleh</span><span class="al-name">${s.albergue}</span></div>
+            <div class="photo-grid">${photoMarkup}</div>
           </div>
-          <div class="elev-mini">${elevSvg(s.profile, 320, 54)}</div>
-          <div class="albergue-box"><span class="al-lbl">Nocleh</span><span class="al-name">${s.albergue}</span></div>
-          <div class="photo-grid">${photoMarkup}</div>
         </div>
       </div>
-    </div>
-  `;
-  listEl.appendChild(el);
+    `;
 
-  el.querySelector(".stage-summary").addEventListener("click", () => {
-    openStageCard(s.n);
-    focusStage(s.n);
-  });
+    listEl.appendChild(el);
 
-  el.querySelectorAll(".photo-grid img").forEach(img => {
-    img.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openLightbox(s.n, Number(img.dataset.idx));
+    el.querySelector(".stage-summary").addEventListener("click", () => {
+      openStageCard(s.n);
+      focusStage(s.n);
+    });
+
+    el.querySelectorAll(".photo-grid img").forEach(img => {
+      img.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openLightbox(s.n, Number(img.dataset.idx));
+      });
     });
   });
-});
+}
 
 function openStageCard(n, scroll){
   document.querySelectorAll(".stage-card").forEach(c => {
@@ -565,7 +553,7 @@ function openStageCard(n, scroll){
 }
 
 /* ======================= FULL ROUTE ELEVATION PROFILE ======================= */
-(function drawFullProfile(){
+function drawFullProfile(){
   const svg = document.getElementById("fullProfile");
   const totalKm = stages.reduce((a,s)=>a+s.km,0);
   const maxAsc = Math.max(...stages.map(s=>s.asc));
@@ -579,7 +567,7 @@ function openStageCard(n, scroll){
   });
   svg.innerHTML = `<path d="${path} L1000,108 L0,108 Z" fill="rgba(29,63,92,0.10)" stroke="none"/>
     <path d="${path}" fill="none" stroke="var(--azulejo)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
-})();
+}
 
 /* ======================= LIGHTBOX ======================= */
 const lightboxEl = document.getElementById("lightbox");
@@ -611,72 +599,74 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* ======================= MAP ======================= */
-const map = new maplibregl.Map({
-  container: 'map',
-  style: 'https://tiles.openfreemap.org/styles/liberty',
-  center: [-8.68, 41.9],
-  zoom: 6.6,
-});
-map.addControl(new maplibregl.NavigationControl(), 'top-right');
+let map, photoMarkers = [];
+const allBounds = [[-8.95, 41.05],[-8.35, 42.95]];
 
-let photoMarkers = []; // {marker, el, stage}
-let allBounds = [[-8.95, 41.05],[-8.35, 42.95]];
-
-map.on('load', () => {
-
-  /* route as one line per stage, so each segment is clickable */
-  const routeFeatures = stages.map(s => ({
-    type: 'Feature',
-    properties: { stageN: s.n },
-    geometry: { type:'LineString', coordinates: s.coords }
-  }));
-  map.addSource('route', { type:'geojson', data:{ type:'FeatureCollection', features: routeFeatures } });
-  map.addLayer({
-    id:'route-line-hit', type:'line', source:'route',
-    layout:{'line-join':'round','line-cap':'round'},
-    paint:{'line-color':'#000','line-width':16,'line-opacity':0}
+function initMap(){
+  map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: [-8.68, 41.9],
+    zoom: 6.6,
   });
-  map.addLayer({
-    id:'route-line', type:'line', source:'route',
-    layout:{'line-join':'round','line-cap':'round'},
-    paint:{'line-color':'#b16443','line-width':3,'line-dasharray':[0.2,1.6]}
+  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  map.on('load', () => {
+    /* route as one line per stage, so each segment is clickable */
+    const routeFeatures = stages.map(s => ({
+      type: 'Feature',
+      properties: { stageN: s.n },
+      geometry: { type:'LineString', coordinates: s.coords }
+    }));
+    map.addSource('route', { type:'geojson', data:{ type:'FeatureCollection', features: routeFeatures } });
+    map.addLayer({
+      id:'route-line-hit', type:'line', source:'route',
+      layout:{'line-join':'round','line-cap':'round'},
+      paint:{'line-color':'#000','line-width':16,'line-opacity':0}
+    });
+    map.addLayer({
+      id:'route-line', type:'line', source:'route',
+      layout:{'line-join':'round','line-cap':'round'},
+      paint:{'line-color':'#b16443','line-width':3,'line-dasharray':[0.2,1.6]}
+    });
+    map.on('click', 'route-line-hit', (e) => {
+      const n = e.features[0].properties.stageN;
+      openStageCard(n);
+      focusStage(n);
+    });
+    map.on('mouseenter', 'route-line-hit', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'route-line-hit', () => map.getCanvas().style.cursor = '');
+
+    /* town markers */
+    const allTowns = [{ name:"Porto", coord: stages[0].coords[0] }]
+      .concat(stages.map(s => ({ name:s.to, coord:s.coords[1], n:s.n, from:s.from, km:s.km })));
+
+    allTowns.forEach(t => {
+      const marker = document.createElement('div');
+      marker.style.width = '12px';
+      marker.style.height = '12px';
+      marker.style.borderRadius = '50%';
+      marker.style.background = t.n ? '#223e77' : '#c2a129';
+      marker.style.border = '2px solid #fbf8f1';
+      marker.style.boxShadow = '0 0 0 1px rgba(0,0,0,0.25)';
+      marker.style.cursor = t.n ? 'pointer' : 'default';
+
+      const popupHtml = t.n
+        ? `<div class="popup-inner"><strong>Etapa ${t.n}</strong><br>${t.from} → ${t.name}<br>${t.km} km</div>`
+        : `<div class="popup-inner"><strong>${t.name}</strong><br>start</div>`;
+
+      const popup = new maplibregl.Popup({ offset: 14 }).setHTML(popupHtml);
+      new maplibregl.Marker({ element: marker }).setLngLat(t.coord).setPopup(popup).addTo(map);
+
+      if (t.n) {
+        marker.addEventListener('click', () => { openStageCard(t.n); focusStage(t.n); });
+      }
+    });
+
+    map.fitBounds(allBounds, { padding: 40 });
+    addPhotoMarkersFromExif();
   });
-  map.on('click', 'route-line-hit', (e) => {
-    const n = e.features[0].properties.stageN;
-    openStageCard(n);
-    focusStage(n);
-  });
-  map.on('mouseenter', 'route-line-hit', () => map.getCanvas().style.cursor = 'pointer');
-  map.on('mouseleave', 'route-line-hit', () => map.getCanvas().style.cursor = '');
-
-  /* town markers */
-  const allTowns = [{ name:"Porto", coord: stages[0].coords[0] }]
-    .concat(stages.map(s => ({ name:s.to, coord:s.coords[1], n:s.n, from:s.from, km:s.km })));
-
-  allTowns.forEach(t => {
-    const marker = document.createElement('div');
-    marker.style.width = '12px';
-    marker.style.height = '12px';
-    marker.style.borderRadius = '50%';
-    marker.style.background = t.n ? '#223e77' : '#c2a129';
-    marker.style.border = '2px solid #fbf8f1';
-    marker.style.boxShadow = '0 0 0 1px rgba(0,0,0,0.25)';
-    marker.style.cursor = t.n ? 'pointer' : 'default';
-
-    const popupHtml = t.n
-      ? `<div class="popup-inner"><strong>Etapa ${t.n}</strong><br>${t.from} → ${t.name}<br>${t.km} km</div>`
-      : `<div class="popup-inner"><strong>${t.name}</strong><br>start</div>`;
-    const popup = new maplibregl.Popup({ offset: 14 }).setHTML(popupHtml);
-    new maplibregl.Marker({ element: marker }).setLngLat(t.coord).setPopup(popup).addTo(map);
-
-    if (t.n) {
-      marker.addEventListener('click', () => { openStageCard(t.n); focusStage(t.n); });
-    }
-  });
-
-  map.fitBounds(allBounds, { padding: 40 });
-  addPhotoMarkersFromExif();
-});
+}
 
 /* ======================= FOTKY NA MAPĚ Z EXIF ======================= */
 async function addPhotoMarkersFromExif(){
@@ -686,7 +676,6 @@ async function addPhotoMarkersFromExif(){
       try {
         const gps = await exifr.gps(p);
         if (!gps || typeof gps.latitude !== 'number' || typeof gps.longitude !== 'number') continue;
-
         s.photoCoords.push([gps.longitude, gps.latitude]);
 
         const el = document.createElement('div');
@@ -711,7 +700,6 @@ async function addPhotoMarkersFromExif(){
 
         const marker = new maplibregl.Marker({ element: el }).setLngLat([gps.longitude, gps.latitude]).setPopup(popup).addTo(map);
         photoMarkers.push({ marker, el, stage: s.n });
-
         el.addEventListener('click', () => { openStageCard(s.n, false); });
       } catch (err) { /* fotka bez GPS dat - přeskočí se */ }
     }
@@ -722,21 +710,32 @@ async function addPhotoMarkersFromExif(){
 function focusStage(n){
   const s = stages.find(x => x.n === n);
   if (!s) return;
-
-  // zobrazit jen fotky dané etapy, ostatní schovat
   photoMarkers.forEach(pm => { pm.el.style.display = (pm.stage === n) ? 'block' : 'none'; });
-
   const pts = s.coords.concat(s.photoCoords);
   const lons = pts.map(p => p[0]), lats = pts.map(p => p[1]);
   const bounds = [[Math.min(...lons), Math.min(...lats)],[Math.max(...lons), Math.max(...lats)]];
   map.fitBounds(bounds, { padding: 90, maxZoom: 13, duration: 700 });
 }
-
 function resetMapView(){
   photoMarkers.forEach(pm => { pm.el.style.display = 'block'; });
   map.fitBounds(allBounds, { padding: 40, duration: 700 });
 }
-</script>
 
+/* ======================= INIT: nacti manifest fotek, pak vykresli vse ======================= */
+async function init(){
+  let manifest = {};
+  try {
+    const res = await fetch('photos-manifest.json', { cache: 'no-store' });
+    if (res.ok) manifest = await res.json();
+  } catch (err) { /* manifest jeste neexistuje - vse pobezi bez fotek */ }
+
+  stages.forEach(s => { s.photos = manifest[s.slug] || []; });
+
+  renderStageCards();
+  drawFullProfile();
+  initMap();
+}
+init();
+</script>
 </body>
 </html>
