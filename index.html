@@ -511,8 +511,12 @@ function buildPhotoMarkup(photos, slug, n, label){
 function attachCardHandlers(el, n, photos){
   listElInstance.appendChild(el);
   el.querySelector(".stage-summary").addEventListener("click", () => {
-    openStageCard(n);
-    focusStage(n);
+    if (el.classList.contains("is-open")) {
+      closeStageCard(n);
+    } else {
+      openStageCard(n);
+      focusStage(n);
+    }
   });
   el.querySelectorAll(".photo-grid img").forEach(img => {
     img.addEventListener("click", (e) => {
@@ -520,6 +524,13 @@ function attachCardHandlers(el, n, photos){
       openLightbox(n, Number(img.dataset.idx));
     });
   });
+}
+
+function closeStageCard(n){
+  const el = document.getElementById("card-" + n);
+  if (!el) return;
+  el.classList.remove("is-open");
+  el.querySelector(".stage-summary").setAttribute("aria-expanded", "false");
 }
 
 function buildExtraCard(e){
@@ -675,7 +686,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* ======================= MAP ======================= */
-let map, photoMarkers = [];
+let map, photoMarkers = [], routeFeatures = [];
 const allBounds = [[-8.95, 41.05],[-8.35, 42.95]];
 
 function initMap(){
@@ -689,7 +700,7 @@ function initMap(){
 
   map.on('load', () => {
     /* route as one line per stage, so each segment is clickable */
-    const routeFeatures = stages.map(s => ({
+    routeFeatures = stages.map(s => ({
       type: 'Feature',
       properties: { stageN: s.n },
       geometry: { type:'LineString', coordinates: s.coords }
@@ -740,52 +751,74 @@ function initMap(){
     });
 
     map.fitBounds(allBounds, { padding: 40 });
-    addPhotoMarkersFromExif();
   });
 }
 
-/* ======================= FOTKY NA MAPĚ Z EXIF ======================= */
-async function addPhotoMarkersFromExif(){
-  for (const s of stages) {
-    for (let i = 0; i < s.photos.length; i++) {
-      const p = s.photos[i];
-      try {
-        const gps = await exifr.gps(p);
-        if (!gps || typeof gps.latitude !== 'number' || typeof gps.longitude !== 'number') continue;
-        s.photoCoords.push([gps.longitude, gps.latitude]);
+/* ======================= FOTKY NA MAPĚ Z EXIF (líně, jen pro otevřenou etapu) ======================= */
+async function loadStagePhotoMarkers(n){
+  const s = stages.find(x => x.n === n);
+  if (!s || s.markersLoaded) return;
+  s.markersLoaded = true;
 
-        const el = document.createElement('div');
-        el.className = 'photo-marker-el';
-        el.style.width = '36px';
-        el.style.height = '36px';
-        el.style.borderRadius = '50%';
-        el.style.backgroundImage = `url(${p})`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-        el.style.border = '2.5px solid var(--gold)';
-        el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.35)';
-        el.style.cursor = 'pointer';
+  const found = []; // {lng, lat, src, idx, time}
+  for (let i = 0; i < s.photos.length; i++) {
+    const p = s.photos[i];
+    try {
+      const exifData = await exifr.parse(p, { gps: true, pick: ['DateTimeOriginal'] });
+      if (!exifData || typeof exifData.latitude !== 'number' || typeof exifData.longitude !== 'number') continue;
+      found.push({
+        lng: exifData.longitude, lat: exifData.latitude, src: p, idx: i,
+        time: exifData.DateTimeOriginal ? +new Date(exifData.DateTimeOriginal) : i
+      });
+    } catch (err) { /* fotka bez GPS dat - přeskočí se */ }
+  }
 
-        const popup = new maplibregl.Popup({ offset: 22 }).setHTML(
-          `<div class="popup-inner"><img class="popup-photo" src="${p}" data-stage="${s.n}" data-idx="${i}"><div style="padding-top:8px;"><strong>Etapa ${s.n}</strong><br>${s.from} → ${s.to}</div></div>`
-        );
-        popup.on('open', () => {
-          const img = document.querySelector('.popup-photo');
-          if (img) img.addEventListener('click', () => openLightbox(s.n, Number(img.dataset.idx)));
-        });
+  found.sort((a, b) => a.time - b.time); // chronologicky, aby na sebe trasa navazovala
+  s.photoCoords = found.map(f => [f.lng, f.lat]);
 
-        const marker = new maplibregl.Marker({ element: el }).setLngLat([gps.longitude, gps.latitude]).setPopup(popup).addTo(map);
-        photoMarkers.push({ marker, el, stage: s.n });
-        el.addEventListener('click', () => { openStageCard(s.n, false); });
-      } catch (err) { /* fotka bez GPS dat - přeskočí se */ }
+  found.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'photo-marker-el';
+    el.style.width = '36px';
+    el.style.height = '36px';
+    el.style.borderRadius = '50%';
+    el.style.backgroundImage = `url(${f.src})`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.border = '2.5px solid var(--gold)';
+    el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.35)';
+    el.style.cursor = 'pointer';
+    el.style.display = 'none'; // skryto, dokud etapu nezaostříme
+
+    const popup = new maplibregl.Popup({ offset: 22 }).setHTML(
+      `<div class="popup-inner"><img class="popup-photo" src="${f.src}" data-stage="${n}" data-idx="${f.idx}"><div style="padding-top:8px;"><strong>Etapa ${n}</strong><br>${s.from} → ${s.to}</div></div>`
+    );
+    popup.on('open', () => {
+      const img = document.querySelector('.popup-photo');
+      if (img) img.addEventListener('click', () => openLightbox(n, Number(img.dataset.idx)));
+    });
+
+    const marker = new maplibregl.Marker({ element: el }).setLngLat([f.lng, f.lat]).setPopup(popup).addTo(map);
+    photoMarkers.push({ marker, el, stage: n });
+    el.addEventListener('click', () => { openStageCard(n, false); });
+  });
+
+  /* trasa téhle etapy se protáhne přes fotky (chronologicky), místo rovné čáry start-cíl */
+  if (s.photoCoords.length) {
+    const feature = routeFeatures.find(rf => rf.properties.stageN === n);
+    if (feature) {
+      feature.geometry.coordinates = [s.coords[0], ...s.photoCoords, s.coords[1]];
+      const src = map.getSource('route');
+      if (src) src.setData({ type: 'FeatureCollection', features: routeFeatures });
     }
   }
 }
 
 /* ======================= FOCUS NA ETAPU (mapa) ======================= */
-function focusStage(n){
+async function focusStage(n){
   const s = stages.find(x => x.n === n);
   if (!s) return;
+  await loadStagePhotoMarkers(n);
   photoMarkers.forEach(pm => { pm.el.style.display = (pm.stage === n) ? 'block' : 'none'; });
   const pts = s.coords.concat(s.photoCoords);
   const lons = pts.map(p => p[0]), lats = pts.map(p => p[1]);
@@ -793,7 +826,7 @@ function focusStage(n){
   map.fitBounds(bounds, { padding: 90, maxZoom: 13, duration: 700 });
 }
 function resetMapView(){
-  photoMarkers.forEach(pm => { pm.el.style.display = 'block'; });
+  photoMarkers.forEach(pm => { pm.el.style.display = 'none'; });
   map.fitBounds(allBounds, { padding: 40, duration: 700 });
 }
 
