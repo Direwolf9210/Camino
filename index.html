@@ -426,41 +426,51 @@ Porto — noc v <strong>The House of Sandeman</strong>, než jsem druhý den rá
 const stages = [
 { n:1, from:"Porto", to:"Vila Do Conde", km:36, asc:354, desc:404,
   albergue:"Le Villageois", coords:[[-8.6291,41.1579],[-8.7434,41.3534]], photos:[],
+  slug:"01-porto-vila-do-conde",
   profile:[20,60,100,95,70,55,90,65,40,25,10] },
 { n:2, from:"Vila Do Conde", to:"Esposende", km:30, asc:161, desc:164,
   albergue:"Hostel Eleven", coords:[[-8.7434,41.3534],[-8.7827,41.5357]], photos:[],
+  slug:"02-vila-do-conde-esposende",
   profile:[25,8,6,10,12,9,14,11,15,12,8] },
 { n:3, from:"Esposende", to:"Viana Do Castelo", km:25, asc:503, desc:499,
   albergue:"Enjoy Viana - Guest House", coords:[[-8.7827,41.5357],[-8.8330,41.6932]], photos:[],
+  slug:"03-esposende-viana-do-castelo",
   profile:[10,30,55,90,130,80,45,55,100,40,10] },
 { n:4, from:"Viana Do Castelo", to:"Caminha", km:25, asc:609, desc:612,
   albergue:"Bom Caminha - Private Albergue for Pilgrims", coords:[[-8.8330,41.6932],[-8.8377,41.8756]], photos:[],
+  slug:"04-viana-do-castelo-caminha",
   profile:[5,40,90,60,30,70,140,90,40,15,5] },
 { n:5, from:"Caminha", to:"Sao Pedro Da Torre", km:23, asc:619, desc:603,
   albergue:"Alvorada Medieval, AL", coords:[[-8.8377,41.8756],[-8.6892,41.9975]], photos:[],
+  slug:"05-caminha-sao-pedro-da-torre",
   profile:[12,15,90,45,94,70,55,75,80,50,30] },
 { n:6, from:"Sao Pedro Da Torre", to:"O Porriño", km:22, asc:368, desc:360,
   albergue:"Albergue Camino Santiago Porrino - City Centre", coords:[[-8.6892,41.9975],[-8.6386,42.1391]], photos:[],
+  slug:"06-sao-pedro-da-torre-o-porrino",
   profile:[15,85,15,20,15,25,15,28,20,38,18] },
 { n:7, from:"O Porriño", to:"Redondela", km:16, asc:313, desc:338,
   albergue:"Santiago de Vilavella", coords:[[-8.6386,42.1391],[-8.6067,42.2842]], photos:[],
+  slug:"07-o-porrino-redondela",
   profile:[50,55,50,65,150,225,190,60,20,12,10] },
 { n:8, from:"Redondela", to:"Pontevedra", km:25, asc:527, desc:512,
   albergue:"Slow City Hostel Pontevedra", coords:[[-8.6067,42.2842],[-8.6444,42.4310]], photos:[],
+  slug:"08-redondela-pontevedra",
   profile:[10,140,55,60,138,25,15,18,15,18,10] },
 { n:9, from:"Pontevedra", to:"Caldas De Reis", km:25, asc:382, desc:381,
   albergue:"Albergue Albor", coords:[[-8.6444,42.4310],[-8.6394,42.6028]], photos:[],
+  slug:"09-pontevedra-caldas-de-reis",
   profile:[15,30,90,110,60,30,22,20,28,34,15] },
 { n:10, from:"Caldas De Reis", to:"Padrón", km:17, asc:379, desc:394,
   albergue:"Hostel & Rooms O Alberque de Meiga", coords:[[-8.6394,42.6028],[-8.6602,42.7434]], photos:[],
+  slug:"10-caldas-de-reis-padron",
   profile:[20,110,150,165,120,70,25,18,15,12,10] },
 { n:11, from:"Padrón", to:"Santiago De Compostela", km:25, asc:625, desc:380,
   albergue:"Blanco Albergue", coords:[[-8.6602,42.7434],[-8.5456,42.8805]], photos:[],
+  slug:"11-padron-santiago",
   profile:[15,20,35,50,70,110,160,200,150,190,255] }
 ];
 
 stages.forEach(s => {
-  s.slug = String(s.n).padStart(2,"0") + "-" + s.from.toLowerCase().replace(/\s+/g,"-").replace(/[^\w-]/g,"");
   s.photoCoords = []; // filled in later from EXIF, [{lng,lat,src}, ...]
 });
 
