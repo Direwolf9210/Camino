@@ -764,12 +764,16 @@ async function loadStagePhotoMarkers(n){
   for (let i = 0; i < s.photos.length; i++) {
     const p = s.photos[i];
     try {
-      const exifData = await exifr.parse(p, { gps: true, pick: ['DateTimeOriginal'] });
-      if (!exifData || typeof exifData.latitude !== 'number' || typeof exifData.longitude !== 'number') continue;
-      found.push({
-        lng: exifData.longitude, lat: exifData.latitude, src: p, idx: i,
-        time: exifData.DateTimeOriginal ? +new Date(exifData.DateTimeOriginal) : i
-      });
+      const gps = await exifr.gps(p);
+      if (!gps || typeof gps.latitude !== 'number' || typeof gps.longitude !== 'number') continue;
+
+      let time = i; // fallback: poradi v poli, kdyz se datum nepodari precist
+      try {
+        const meta = await exifr.parse(p, ['DateTimeOriginal']);
+        if (meta && meta.DateTimeOriginal) time = +new Date(meta.DateTimeOriginal);
+      } catch (e) { /* bez data - pouzije se poradove cislo */ }
+
+      found.push({ lng: gps.longitude, lat: gps.latitude, src: p, idx: i, time });
     } catch (err) { /* fotka bez GPS dat - přeskočí se */ }
   }
 
