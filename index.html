@@ -566,17 +566,23 @@ function openStageCard(n, scroll){
 function drawFullProfile(){
   const svg = document.getElementById("fullProfile");
   const totalKm = stages.reduce((a,s)=>a+s.km,0);
-  const maxAsc = Math.max(...stages.map(s=>s.asc));
+  const maxV = Math.max(...stages.flatMap(s=>s.profile));
+  const baseY = 102, topPad = 8;
   let x = 0;
-  let path = "M0,102 ";
+  const pts = [];
   stages.forEach(s=>{
     const w = (s.km/totalKm)*1000;
-    const peakY = 102 - (s.asc/maxAsc)*80;
-    path += `L${x + w*0.5},${peakY} L${x+w},102 `;
+    const n = s.profile.length;
+    s.profile.forEach((v,i)=>{
+      const px = x + (i/(n-1))*w;
+      const py = baseY - (v/maxV)*(baseY-topPad);
+      pts.push(`${px.toFixed(1)},${py.toFixed(1)}`);
+    });
     x += w;
   });
-  svg.innerHTML = `<path d="${path} L1000,108 L0,108 Z" fill="rgba(29,63,92,0.10)" stroke="none"/>
-    <path d="${path}" fill="none" stroke="var(--azulejo)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const line = pts.join(" ");
+  svg.innerHTML = `<path d="M${pts[0]} L${line} L1000,${baseY} L0,${baseY} Z" fill="rgba(29,63,92,0.10)" stroke="none"/>
+    <polyline points="${line}" fill="none" stroke="var(--azulejo)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
 }
 
 /* ======================= LIGHTBOX ======================= */
